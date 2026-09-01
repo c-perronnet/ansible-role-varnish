@@ -36,7 +36,10 @@ varnish_packagecloud_repo_yum_repository_priority: "1"
 varnish_yum_repo_baseurl: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/el/{{ ansible_distribution_major_version|int }}/$basearch
 
 # Only used on Debian / Ubuntu.
-varnish_apt_repo: deb https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main
+# apt-key a été retiré de Debian 13 (trixie) : la clé est désormais déposée
+# dans un keyring dédié et désignée par signed-by, au lieu du trousseau global.
+varnish_apt_keyring: /etc/apt/keyrings/varnishcache.asc
+varnish_apt_repo: deb [signed-by={{ varnish_apt_keyring }}] https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release }} main
 
 # Optionally define additional backends.
 # varnish_backends:

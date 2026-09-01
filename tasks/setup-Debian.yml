@@ -8,16 +8,30 @@
           - gnupg2
         state: present
 
+    - name: Ensure the apt keyring directory exists.
+      ansible.builtin.file:
+        path: "{{ varnish_apt_keyring | dirname }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    # apt_key (et le binaire apt-key qu'il appelle) n'existe plus sur Debian 13.
+    # La clé packagecloud est servie en ASCII armé et apt l'accepte telle quelle
+    # en signed-by, d'où get_url plutôt qu'un gpg --dearmor non idempotent.
     - name: Add packagecloud.io Varnish apt key.
-      apt_key:
+      ansible.builtin.get_url:
         url: https://packagecloud.io/varnishcache/{{ varnish_packagecloud_repo }}/gpgkey
-        state: present
+        dest: "{{ varnish_apt_keyring }}"
+        owner: root
+        group: root
+        mode: "0644"
 
     - name: Add packagecloud.io Varnish apt repository.
       apt_repository:
         repo: "{{ varnish_apt_repo }}"
         state: present
-  when: "{{ varnish_apt_use_packagecloud }}"
+  when: varnish_apt_use_packagecloud | bool
 
 - name: Ensure Varnish is installed.
   apt:
